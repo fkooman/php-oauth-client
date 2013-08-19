@@ -19,6 +19,7 @@ namespace fkooman\OAuth\Client;
 
 class TokenResponse
 {
+    const DEFAULT_TOKEN_TYPE = "bearer";
     private $accessToken;
     private $tokenType;
     private $expiresIn;
@@ -41,7 +42,7 @@ class TokenResponse
                 throw new TokenResponseException(sprintf("missing field '%s'", $key));
             }
         }
-        $data['token_type'] = array_key_exists('token_type', $data) ? $data['token_type'] : "bearer";
+        $data['token_type'] = array_key_exists('token_type', $data) ? $data['token_type'] : self::DEFAULT_TOKEN_TYPE;
         $t = new static($data['access_token'], $data['token_type']);
         if (array_key_exists('expires_in', $data)) {
             $t->setExpiresIn($data['expires_in']);
