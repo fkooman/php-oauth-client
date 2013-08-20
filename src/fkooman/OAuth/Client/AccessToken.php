@@ -19,6 +19,9 @@ namespace fkooman\OAuth\Client;
 
 class AccessToken extends Token
 {
+    /** default token_type */
+    const DEFAULT_TOKEN_TYPE = "bearer";
+
     /** access_token VARCHAR(255) NOT NULL */
     private $accessToken;
 
@@ -32,11 +35,12 @@ class AccessToken extends Token
     {
         parent::__construct($data);
 
-        foreach (array('token_type', 'access_token') as $key) {
+        foreach (array('access_token') as $key) {
             if (!array_key_exists($key, $data)) {
                 throw new TokenException(sprintf("missing field '%s'", $key));
             }
         }
+        $data['token_type'] = array_key_exists('token_type', $data) ? $data['token_type'] : self::DEFAULT_TOKEN_TYPE;
         $this->setAccessToken($data['access_token']);
         $this->setTokenType($data['token_type']);
         $expiresIn = array_key_exists('expires_in', $data) ? $data['expires_in'] : null;
