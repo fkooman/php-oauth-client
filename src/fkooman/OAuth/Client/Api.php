@@ -76,7 +76,7 @@ class Api
             $expires_in = $accessToken->getExpiresIn();
 
             // If expires_in is not null, then check if the token has expired.
-            if (time() < $accessToken->getIssueTime() + $expires_in || ($this->clientConfig->getAllowNullExpiresIn() && null === $expires_in)) {
+            if (null === $expires_in || time() < $accessToken->getIssueTime() + $expires_in) {
                 // not expired
                 return $accessToken;
             }
