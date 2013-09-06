@@ -44,7 +44,7 @@ class TokenResponse
         if (array_key_exists('refresh_token', $data)) {
             $this->setRefreshToken($data['refresh_token']);
         }
-        if (array_key_exists('scope', $data)) {
+        if (array_key_exists('scope', $data) && $data['scope'] != '') {
             $this->setScope($data['scope']);
         }
     }
