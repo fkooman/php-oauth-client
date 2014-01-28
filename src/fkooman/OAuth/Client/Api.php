@@ -202,7 +202,7 @@ class Api
         }
 
         // redirect_uri
-        if ($this->clientConfig->getRedirectUri()) {
+        if ($this->clientConfig->getRedirectUri($q['state'])) {
             $q['redirect_uri'] = $this->clientConfig->getRedirectUri($q['state']);
             if($this->clientConfig->getAppendStateToRedirectUri())
             {
