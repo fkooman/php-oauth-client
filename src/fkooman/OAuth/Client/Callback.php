@@ -87,7 +87,7 @@ class Callback
 
         if (null !== $qCode) {
             $t = new TokenRequest($this->httpClient, $this->clientConfig);
-            $tokenResponse = $t->withAuthorizationCode($qCode, $state);
+            $tokenResponse = $t->withAuthorizationCode($qCode, $qState);
             if (false === $tokenResponse) {
                 throw new CallbackException("unable to fetch access token with authorization code");
             }
