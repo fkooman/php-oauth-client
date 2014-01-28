@@ -204,6 +204,12 @@ class Api
         // redirect_uri
         if ($this->clientConfig->getRedirectUri()) {
             $q['redirect_uri'] = $this->clientConfig->getRedirectUri();
+            if($this->clientConfig->getAppendStateToRedirectUri())
+            {
+                $uri_param_connector = (false === strpos($q['redirect_uri'], '?'))?'?':'&';
+                $q['redirect_uri'] = $q['redirect_uri'].$uri_param_connector.'state='.rawurlencode($q['state']);
+                unset($q['state']);
+            }
         }
 
         $separator = (false === strpos($this->clientConfig->getAuthorizeEndpoint(), "?")) ? "?" : "&";
