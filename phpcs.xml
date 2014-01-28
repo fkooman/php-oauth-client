@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ruleset name="php-oauth-client">
+    <description>PSR2 without line length</description>
+    <rule ref="PSR2">
+        <exclude name="Generic.Files.LineLength" />
+    </rule>
+</ruleset>
