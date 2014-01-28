@@ -58,7 +58,7 @@ class TokenResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testNullScope()
     {
-        $t = new TokenResponse(
+        new TokenResponse(
             array(
                 "access_token" => "foo",
                 "token_type" => "Bearer",
@@ -73,7 +73,7 @@ class TokenResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testEmptyScope()
     {
-        $t = new TokenResponse(
+        new TokenResponse(
             array(
                 "access_token" => "foo",
                 "token_type" => "Bearer",
@@ -88,7 +88,7 @@ class TokenResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function testNegativeExpiresIn()
     {
-        $t = new TokenResponse(
+        new TokenResponse(
             array(
                 "access_token" => "foo",
                 "token_type" => "Bearer",
