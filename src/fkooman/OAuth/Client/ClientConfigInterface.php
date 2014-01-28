@@ -35,4 +35,6 @@ interface ClientConfigInterface
     public function getDefaultTokenType();
     public function setEnableDebug($enableDebug);
     public function getEnableDebug();
+    public function setAppendStateToRedirectUri($appendStateToRedirectUri);
+    public function getAppendStateToRedirectUri();
 }

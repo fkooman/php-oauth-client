@@ -135,9 +135,22 @@ class ClientConfig implements ClientConfigInterface
         $this->redirectUri = $redirectUri;
     }
 
-    public function getRedirectUri()
+    public function getRedirectUri($state = null)
     {
-        return $this->redirectUri;
+        $uri = $this->redirectUri;
+
+        if($this->getAppendStateToRedirectUri())
+        {
+            if(null === $state)
+            {
+                throw new \InvalidArgumentException('A state must be passed to getRedirectUri when the option append_state_to_redirect_uri is set to true.');
+            }
+            $uri_param_connector = (false === strpos($uri, '?'))?'?':'&';
+            $q['redirect_uri'] = $uri.$uri_param_connector.'state='.rawurlencode($state);
+            unset($q['state']);
+        }
+
+        return $uri;
     }
 
     public function setCredentialsInRequestBody($credentialsInRequestBody)
