@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DIR=`dirname $0`
+EXIT=0
+
+cd $DIR
+
+./composer.phar validate || EXIT=1
+
+echo 'phpcs --standard=phpcs.xml ./src'
+phpcs --standard=./phpcs.xml ./src || EXIT=1
+
+echo 'phpcs --standard=phpcs.xml ./tests'
+phpcs --standard=./phpcs.xml ./tests || EXIT=1
+
+echo './vendor/bin/phpmd tests/ text phpmd.xml'
+./vendor/bin/phpmd tests/ text phpmd.xml || EXIT=1
+
+echo './vendor/bin/phpmd src/ text phpmd.xml'
+./vendor/bin/phpmd src/ text phpmd.xml || EXIT=1
+
+echo './vendor/bin/php-cs-fixer --dry-run --verbose --diff fix src --fixers=unused_use'
+./vendor/bin/php-cs-fixer --dry-run --verbose --diff fix src --fixers=unused_use || EXIT=1
+
+echo './vendor/bin/phpunit'
+./vendor/bin/phpunit || EXIT=1
+
+exit $EXIT
+

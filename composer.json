@@ -14,14 +14,24 @@
     "description": "PHP OAuth 2.0 Client",
     "license": "LGPL-3.0+",
     "name": "fkooman/php-oauth-client",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:fabpot/PHP-CS-Fixer.git"
+        }
+    ],
     "require": {
         "ext-openssl": "*",
         "fkooman/php-oauth-lib-common": "0.3.*",
-        "guzzle/guzzle": "3.7.*",
+        "guzzle/guzzle": "3.8.*",
         "monolog/monolog": "1.6.*",
         "php": ">=5.3.3"
     },
     "require-dev": {
+        "phpunit/phpunit": ">=3.7",
+        "phpmd/phpmd": "*",
+        "fabpot/php-cs-fixer": "dev-master",
+        "squizlabs/php_codesniffer": "1.*",
         "sami/sami": "v1.1"
     }
 }
