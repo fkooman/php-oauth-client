@@ -31,14 +31,14 @@ class TokenRequest
         $this->clientConfig = $clientConfig;
     }
 
-    public function withAuthorizationCode($authorizationCode)
+    public function withAuthorizationCode($authorizationCode, $state = null)
     {
         $p = array (
             "code" => $authorizationCode,
             "grant_type" => "authorization_code"
         );
-        if (null !== $this->clientConfig->getRedirectUri()) {
-            $p['redirect_uri'] = $this->clientConfig->getRedirectUri();
+        if (null !== $this->clientConfig->getRedirectUri($state)) {
+            $p['redirect_uri'] = $this->clientConfig->getRedirectUri($state);
         }
 
         return $this->accessTokenRequest($p);

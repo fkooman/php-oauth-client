@@ -202,12 +202,10 @@ class Api
         }
 
         // redirect_uri
-        if ($this->clientConfig->getRedirectUri()) {
-            $q['redirect_uri'] = $this->clientConfig->getRedirectUri();
+        if ($this->clientConfig->getRedirectUri($q['state'])) {
+            $q['redirect_uri'] = $this->clientConfig->getRedirectUri($q['state']);
             if($this->clientConfig->getAppendStateToRedirectUri())
             {
-                $uri_param_connector = (false === strpos($q['redirect_uri'], '?'))?'?':'&';
-                $q['redirect_uri'] = $q['redirect_uri'].$uri_param_connector.'state='.rawurlencode($q['state']);
                 unset($q['state']);
             }
         }
