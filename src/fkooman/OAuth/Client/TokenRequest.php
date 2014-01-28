@@ -37,7 +37,7 @@ class TokenRequest
             "code" => $authorizationCode,
             "grant_type" => "authorization_code"
         );
-        if (null !== $this->clientConfig->getRedirectUri()) {
+        if (null !== $this->clientConfig->getRedirectUri($state)) {
             $p['redirect_uri'] = $this->clientConfig->getRedirectUri($state);
         }
 
