@@ -146,8 +146,7 @@ class ClientConfig implements ClientConfigInterface
                 throw new \InvalidArgumentException('A state must be passed to getRedirectUri when the option append_state_to_redirect_uri is set to true.');
             }
             $uri_param_connector = (false === strpos($uri, '?'))?'?':'&';
-            $q['redirect_uri'] = $uri.$uri_param_connector.'state='.rawurlencode($state);
-            unset($q['state']);
+            $uri = $uri.$uri_param_connector.'state='.rawurlencode($state);
         }
 
         return $uri;
