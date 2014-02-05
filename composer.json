@@ -17,8 +17,8 @@
     "require": {
         "ext-openssl": "*",
         "fkooman/php-oauth-lib-common": "0.3.*",
-        "guzzle/guzzle": "3.7.*",
-        "monolog/monolog": "1.6.*",
+        "guzzle/guzzle": "~3.7",
+        "monolog/monolog": "~1.6",
         "php": ">=5.3.3"
     },
     "require-dev": {
