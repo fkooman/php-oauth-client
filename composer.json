@@ -22,6 +22,7 @@
         "php": ">=5.3.3"
     },
     "require-dev": {
-        "sami/sami": "v1.1"
+        "sami/sami": "v1.1",
+        "phpunit/phpunit": "~3.7"
     }
 }
