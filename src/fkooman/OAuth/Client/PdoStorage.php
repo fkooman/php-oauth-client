@@ -35,7 +35,7 @@ class PdoStorage implements StorageInterface
         $stmt = $this->db->prepare("SELECT * FROM access_tokens WHERE client_config_id = :client_config_id AND user_id = :user_id AND scope = :scope");
         $stmt->bindValue(":client_config_id", $clientConfigId, PDO::PARAM_STR);
         $stmt->bindValue(":user_id", $context->getUserId(), PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $context->getScope()->isEmpty() ? null : $context->getScope()->toString(), PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $context->getScope()->toString(), PDO::PARAM_STR);
         $stmt->execute();
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -53,7 +53,7 @@ class PdoStorage implements StorageInterface
         $stmt = $this->db->prepare("INSERT INTO access_tokens (client_config_id, user_id, scope, access_token, token_type, expires_in, issue_time) VALUES(:client_config_id, :user_id, :scope, :access_token, :token_type, :expires_in, :issue_time)");
         $stmt->bindValue(":client_config_id", $accessToken->getClientConfigId(), PDO::PARAM_STR);
         $stmt->bindValue(":user_id", $accessToken->getUserId(), PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $accessToken->getScope()->isEmpty() ? null : $accessToken->getScope()->toString(), PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $accessToken->getScope()->toString(), PDO::PARAM_STR);
         $stmt->bindValue(":access_token", $accessToken->getAccessToken(), PDO::PARAM_STR);
         $stmt->bindValue(":token_type", $accessToken->getTokenType(), PDO::PARAM_STR);
         $stmt->bindValue(":expires_in", $accessToken->getExpiresIn(), PDO::PARAM_INT);
@@ -80,7 +80,7 @@ class PdoStorage implements StorageInterface
         $stmt = $this->db->prepare("SELECT * FROM refresh_tokens WHERE client_config_id = :client_config_id AND user_id = :user_id AND scope = :scope");
         $stmt->bindValue(":client_config_id", $clientConfigId, PDO::PARAM_STR);
         $stmt->bindValue(":user_id", $context->getUserId(), PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $context->getScope()->isEmpty() ? null : $context->getScope()->toString(), PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $context->getScope()->toString(), PDO::PARAM_STR);
         $stmt->execute();
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -98,7 +98,7 @@ class PdoStorage implements StorageInterface
         $stmt = $this->db->prepare("INSERT INTO refresh_tokens (client_config_id, user_id, scope, refresh_token, issue_time) VALUES(:client_config_id, :user_id, :scope, :refresh_token, :issue_time)");
         $stmt->bindValue(":client_config_id", $refreshToken->getClientConfigId(), PDO::PARAM_STR);
         $stmt->bindValue(":user_id", $refreshToken->getUserId(), PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $refreshToken->getScope()->isEmpty() ? null : $refreshToken->getScope()->toString(), PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $refreshToken->getScope()->toString(), PDO::PARAM_STR);
         $stmt->bindValue(":refresh_token", $refreshToken->getRefreshToken(), PDO::PARAM_STR);
         $stmt->bindValue(":issue_time", $refreshToken->getIssueTime(), PDO::PARAM_INT);
 
@@ -140,7 +140,7 @@ class PdoStorage implements StorageInterface
         $stmt = $this->db->prepare("INSERT INTO states (client_config_id, user_id, scope, issue_time, state) VALUES(:client_config_id, :user_id, :scope, :issue_time, :state)");
         $stmt->bindValue(":client_config_id", $state->getClientConfigId(), PDO::PARAM_STR);
         $stmt->bindValue(":user_id", $state->getUserId(), PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $state->getScope()->isEmpty() ? null : $state->getScope()->toString(), PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $state->getScope()->toString(), PDO::PARAM_STR);
         $stmt->bindValue(":issue_time", $state->getIssueTime(), PDO::PARAM_INT);
         $stmt->bindValue(":state", $state->getState(), PDO::PARAM_STR);
         $stmt->execute();
