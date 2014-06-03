@@ -33,6 +33,8 @@ class ClientConfig implements ClientConfigInterface
     private $enableDebug;
     private $defaultServerScope;
     private $useRedirectUriOnRefreshTokenRequest;
+    private $appendStateToRedirectUri;
+
 
     public function __construct(array $data)
     {
@@ -62,6 +64,9 @@ class ClientConfig implements ClientConfigInterface
 
         $useRedirectUriOnRefreshTokenRequest = array_key_exists('use_redirect_uri_on_refresh_token_request', $data) ? $data['use_redirect_uri_on_refresh_token_request'] : false;
         $this->setUseRedirectUriOnRefreshTokenRequest($useRedirectUriOnRefreshTokenRequest);
+
+        $appendStateToRedirectUri = array_key_exists('append_state_to_redirect_uri', $data) ? $data['append_state_to_redirect_uri'] : false;
+        $this->setAppendStateToRedirectUri($appendStateToRedirectUri);
 
         $defaultServerScope = array_key_exists('default_server_scope', $data) ? $data['default_server_scope'] : null;
         $this->setDefaultServerScope($defaultServerScope);
@@ -130,9 +135,21 @@ class ClientConfig implements ClientConfigInterface
         $this->redirectUri = $redirectUri;
     }
 
-    public function getRedirectUri()
+    public function getRedirectUri($state = null)
     {
-        return $this->redirectUri;
+        $uri = $this->redirectUri;
+
+        if($this->getAppendStateToRedirectUri())
+        {
+            if(null === $state)
+            {
+                throw new \InvalidArgumentException('A state must be passed to getRedirectUri when the option append_state_to_redirect_uri is set to true.');
+            }
+            $uri_param_connector = (false === strpos($uri, '?'))?'?':'&';
+            $uri = $uri.$uri_param_connector.'state='.rawurlencode($state);
+        }
+
+        return $uri;
     }
 
     public function setCredentialsInRequestBody($credentialsInRequestBody)
@@ -193,6 +210,16 @@ class ClientConfig implements ClientConfigInterface
     public function getUseRedirectUriOnRefreshTokenRequest()
     {
         return $this->useRedirectUriOnRefreshTokenRequest;
+    }
+
+    public function setAppendStateToRedirectUri($appendStateToRedirectUri)
+    {
+        $this->appendStateToRedirectUri = $appendStateToRedirectUri;
+    }
+
+    public function getAppendStateToRedirectUri()
+    {
+        return $this->appendStateToRedirectUri;
     }
 
     public function setEnableDebug($enableDebug)
