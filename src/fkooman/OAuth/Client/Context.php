@@ -24,7 +24,7 @@ class Context
     /** @var string */
     private $userId;
 
-    /** @var fkooman\OAuth\Common\Scope */
+    /** @var Scope */
     private $scope;
 
     public function __construct($userId, array $scope = array())

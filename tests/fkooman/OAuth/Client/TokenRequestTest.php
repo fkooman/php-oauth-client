@@ -16,10 +16,10 @@
  */
 namespace fkooman\OAuth\Client;
 
-use Guzzle\Http\Client;
-use Guzzle\Plugin\History\HistoryPlugin;
-use Guzzle\Plugin\Mock\MockPlugin;
-use Guzzle\Http\Message\Response;
+use GuzzleHttp\Client;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use fkooman\OAuth\Common\Scope;
 
 class TokenRequestTest extends \PHPUnit_Framework_TestCase
@@ -124,57 +124,58 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testWithAuthorizationCode()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[0]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[0]))]);
+        $container = [];
+        $history = Middleware::history($container);
+        $stack = \GuzzleHttp\HandlerStack::create($mock);
+        $stack->push($history);
+        $client = new Client(['handler' => $stack]);
+
         $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
         $tokenRequest->withAuthorizationCode('12345');
-        $lastRequest = $history->getLastRequest();
-        $this->assertEquals('POST', $lastRequest->getMethod());
-        $this->assertEquals('code=12345&grant_type=authorization_code', $lastRequest->getPostFields()->__toString());
-        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest->getHeader('Authorization'));
+
+        $lastRequest = array_pop($container);
+        $this->assertEquals('POST', $lastRequest['request']->getMethod());
+        $this->assertEquals('code=12345&grant_type=authorization_code', $lastRequest['request']->getBody()->__toString());
+        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest['request']->getHeaderLine('Authorization'));
         $this->assertEquals(
             'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest->getHeader('Content-Type')
+            $lastRequest['request']->getHeaderLine('Content-Type')
         );
     }
 
     public function testWithAuthorizationCodeCredentialsInRequestBody()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[0]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[0]))]);
+        $container = [];
+        $history = Middleware::history($container);
+        $stack = \GuzzleHttp\HandlerStack::create($mock);
+        $stack->push($history);
+        $client = new Client(['handler' => $stack]);
+
         $tokenRequest = new TokenRequest($client, $this->clientConfig[1]);
         $tokenRequest->withAuthorizationCode('12345');
-        $lastRequest = $history->getLastRequest();
-        $this->assertEquals('POST', $lastRequest->getMethod());
+        $lastRequest = array_pop($container);
+        $this->assertEquals('POST', $lastRequest['request']->getMethod());
         $this->assertEquals(
             'code=12345&grant_type=authorization_code&redirect_uri=http%3A%2F%2Ffoo.example.org%2Fcallback&client_id=foo&client_secret=bar',
-            $lastRequest->getPostFields()->__toString()
+            $lastRequest['request']->getBody()->__toString()
         );
         $this->assertEquals(
             'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest->getHeader('Content-Type')
+            $lastRequest['request']->getHeaderLine('Content-Type')
         );
     }
 
     public function testAllowStringExpiresIn()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[2]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[2]))]);
+        $container = [];
+        $history = Middleware::history($container);
+        $stack = \GuzzleHttp\HandlerStack::create($mock);
+        $stack->push($history);
+        $client = new Client(['handler' => $stack]);
+
         $tokenRequest = new TokenRequest($client, $this->clientConfig[2]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
         $this->assertEquals(1200, $tokenResponse->getExpiresIn());
@@ -182,13 +183,13 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowArrayScope()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[3]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[3]))]);
+        $container = [];
+        $history = Middleware::history($container);
+        $stack = \GuzzleHttp\HandlerStack::create($mock);
+        $stack->push($history);
+        $client = new Client(['handler' => $stack]);
+
         $tokenRequest = new TokenRequest($client, $this->clientConfig[3]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
         $this->assertTrue($tokenResponse->getScope()->equals(Scope::fromString('foo bar')));
@@ -196,13 +197,13 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowCommaSeparatedScope()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[4]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[4]))]);
+        $container = [];
+        $history = Middleware::history($container);
+        $stack = \GuzzleHttp\HandlerStack::create($mock);
+        $stack->push($history);
+        $client = new Client(['handler' => $stack]);
+
         $tokenRequest = new TokenRequest($client, $this->clientConfig[4]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
         $this->assertTrue($tokenResponse->getScope()->equals(Scope::fromString('foo bar')));
@@ -210,38 +211,40 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testWithRefreshToken()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[0]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[0]))]);
+        $container = [];
+        $history = Middleware::history($container);
+        $stack = \GuzzleHttp\HandlerStack::create($mock);
+        $stack->push($history);
+        $client = new Client(['handler' => $stack]);
+
         $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
         $tokenRequest->withRefreshToken('refresh_123_456');
-        $lastRequest = $history->getLastRequest();
-        $this->assertEquals('POST', $lastRequest->getMethod());
-        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest->getHeader('Authorization'));
+
+        $lastRequest = array_pop($container);
+        $this->assertEquals('POST', $lastRequest['request']->getMethod());
+        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest['request']->getHeaderLine('Authorization'));
         $this->assertEquals(
             'refresh_token=refresh_123_456&grant_type=refresh_token',
-            $lastRequest->getPostFields()->__toString()
+            $lastRequest['request']->getBody()->__toString()
         );
         $this->assertEquals(
             'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest->getHeader('Content-Type')
+            $lastRequest['request']->getHeaderLine('Content-Type')
         );
     }
 
     public function testBrokenJsonResponse()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[1]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[1]))]);
+        $container = [];
+        $history = Middleware::history($container);
+        $stack = \GuzzleHttp\HandlerStack::create($mock);
+        $stack->push($history);
+        $client = new Client(['handler' => $stack]);
+
         $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
+        $this->setExpectedException('\fkooman\OAuth\Client\Exception\TokenResponseException');
         $this->assertFalse($tokenRequest->withRefreshToken('refresh_123_456'));
     }
 }

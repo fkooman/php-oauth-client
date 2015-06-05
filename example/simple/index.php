@@ -1,5 +1,7 @@
 <?php
 
+//@todo make this example work with Guzzle 6
+
 require_once 'vendor/autoload.php';
 
 $introspection = 'http://localhost/php-oauth-as/introspect.php';
