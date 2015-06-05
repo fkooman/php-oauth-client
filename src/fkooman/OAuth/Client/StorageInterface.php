@@ -18,16 +18,60 @@ namespace fkooman\OAuth\Client;
 
 interface StorageInterface
 {
+    /**
+     * @param AccessToken $accessToken
+     */
     public function storeAccessToken(AccessToken $accessToken);
+
+    /**
+     * @param $clientConfigId
+     * @param Context $context
+     * @return AccessToken
+     */
     public function getAccessToken($clientConfigId, Context $context);
+
+    /**
+     * @param AccessToken $accessToken
+     */
     public function deleteAccessToken(AccessToken $accessToken);
 
+    /**
+     * @param RefreshToken $refreshToken
+     */
     public function storeRefreshToken(RefreshToken $refreshToken);
+
+    /**
+     * @param $clientConfigId
+     * @param Context $context
+     * @return RefreshToken
+     */
     public function getRefreshToken($clientConfigId, Context $context);
+
+    /**
+     * @param RefreshToken $refreshToken
+     */
     public function deleteRefreshToken(RefreshToken $refreshToken);
 
+    /**
+     * @param State $state
+     */
     public function storeState(State $state);
+
+    /**
+     * @param $clientConfigId
+     * @param $state
+     * @return State
+     */
     public function getState($clientConfigId, $state);
+
+    /**
+     * @param State $state
+     */
     public function deleteState(State $state);
+
+    /**
+     * @param $clientConfigId
+     * @param Context $context
+     */
     public function deleteStateForContext($clientConfigId, Context $context);
 }

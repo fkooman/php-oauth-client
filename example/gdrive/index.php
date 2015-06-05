@@ -1,5 +1,7 @@
 <?php
 
+//@todo make this example work with Guzzle 6
+
 use fkooman\OAuth\Client\Api;
 use fkooman\OAuth\Client\Context;
 use fkooman\OAuth\Client\GoogleClientConfig;

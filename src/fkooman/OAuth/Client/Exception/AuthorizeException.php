@@ -20,7 +20,7 @@ class AuthorizeException extends \Exception
 {
     private $description;
 
-    public function __construct($message, $description, $code = 0, Exception $previous = null)
+    public function __construct($message, $description, $code = 0, \Exception $previous = null)
     {
         parent::__construct($message, $code, $previous);
         $this->description = $description;

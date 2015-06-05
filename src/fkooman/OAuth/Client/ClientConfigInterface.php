@@ -34,4 +34,17 @@ interface ClientConfigInterface
     public function getDefaultTokenType();
     public function setEnableDebug($enableDebug);
     public function getEnableDebug();
+    public function getUseCommaSeparatedScope();
+    public function setUseCommaSeparatedScope($useCommaSeparatedScope);
+    public function getUseRedirectUriOnRefreshTokenRequest();
+    public function setUseRedirectUriOnRefreshTokenRequest($useRedirectUriOnRefreshTokenRequest);
+    public function getAllowNullExpiresIn();
+    public function setAllowNullExpiresIn($allowNullExpiresIn);
+    public function getDefaultServerScope();
+    public function setDefaultServerScope($defaultServerScope);
+    public function getAllowStringExpiresIn();
+    public function setAllowStringExpiresIn($allowStringExpiresIn);
+    public function getUseArrayScope();
+    public function setUseArrayScope($useArrayScope);
+
 }

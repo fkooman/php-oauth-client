@@ -21,15 +21,36 @@ use fkooman\OAuth\Common\Scope;
 
 class TokenResponse
 {
+    /**
+     * @var AccessToken
+     */
     private $accessToken;
+
+    /**
+     * @var string
+     */
     private $tokenType;
+
+    /**
+     * @var int
+     */
     private $expiresIn;
+
+    /**
+     * @var RefreshToken
+     */
     private $refreshToken;
+
+    /**
+     * @var Scope
+     */
     private $scope;
 
     public function __construct(array $data)
     {
-        foreach (array('access_token', 'token_type') as $key) {
+        //Shopify does not provide token_type
+        if (!isset($data['token_type'])) $data['token_type']='bearer';
+        foreach (array('access_token') as $key) {
             if (!array_key_exists($key, $data)) {
                 throw new TokenResponseException(sprintf("missing field '%s'", $key));
             }
