@@ -18,8 +18,8 @@ namespace fkooman\OAuth\Client;
 
 use fkooman\OAuth\Common\Scope;
 use GuzzleHttp\Client;
-use GuzzleHttp\Message\Response;
-use GuzzleHttp\Subscriber\Mock;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Handler\MockHandler;
 
 class CallbackTest extends \PHPUnit_Framework_TestCase
 {
@@ -49,17 +49,17 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testXYZ()
     {
-        $mock = new Mock([new Response(
+        $mock = new MockHandler([new Response(
             200,
             [],
-            \GuzzleHttp\Stream\Stream::factory(json_encode(
+            \GuzzleHttp\Psr7\stream_for(json_encode(
                 array(
                     'access_token' => 'my_access_token',
                     'token_type' => 'BeArEr',
                     'refresh_token' => 'why_not_a_refresh_token',
                 )
-            ))
-        )]);
+            )))
+        ]);
         $client = new Client(['handler' => $mock]);
 
         $state = new State(
