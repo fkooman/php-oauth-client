@@ -39,12 +39,10 @@ class Api
      */
     private $tokenStorage;
 
-    /**
-     * @var \GuzzleHttp\Client
-     */
+    /** @var fkooman/OAuth/Client/HttpClientInterface */
     private $httpClient;
 
-    public function __construct($clientConfigId, ClientConfigInterface $clientConfig, StorageInterface $tokenStorage, \GuzzleHttp\Client $httpClient)
+    public function __construct($clientConfigId, ClientConfigInterface $clientConfig, StorageInterface $tokenStorage, HttpClientInterface $httpClient)
     {
         $this->setClientConfigId($clientConfigId);
         $this->setClientConfig($clientConfig);
@@ -70,7 +68,7 @@ class Api
         $this->tokenStorage = $tokenStorage;
     }
 
-    public function setHttpClient(\GuzzleHttp\Client $httpClient)
+    public function setHttpClient(HttpClientInterface $httpClient)
     {
         $this->httpClient = $httpClient;
     }
