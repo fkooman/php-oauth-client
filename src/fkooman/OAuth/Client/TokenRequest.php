@@ -20,10 +20,14 @@ use RuntimeException;
 
 class TokenRequest
 {
-    /** @var fkooman\OAuth\Client\HttpClientInterface */
+    /**
+     * @var \fkooman\OAuth\Client\HttpClientInterface
+     */
     private $httpClient;
 
-    /** @var \fkooman\OAuth\Client\ClientConfigInterface */
+    /**
+     * @var \fkooman\OAuth\Client\ClientConfigInterface
+     */
     private $clientConfig;
 
     public function __construct(HttpClientInterface $httpClient, ClientConfigInterface $clientConfig)
@@ -34,20 +38,20 @@ class TokenRequest
 
     public function withAuthorizationCode($authorizationCode)
     {
-        $p = array(
+        $postFields = array(
             'code' => $authorizationCode,
             'grant_type' => 'authorization_code',
         );
         if (null !== $this->clientConfig->getRedirectUri()) {
-            $p['redirect_uri'] = $this->clientConfig->getRedirectUri();
+            $postFields['redirect_uri'] = $this->clientConfig->getRedirectUri();
         }
 
-        return $this->accessTokenRequest($p);
+        return $this->accessTokenRequest($postFields);
     }
 
     public function withRefreshToken($refreshToken)
     {
-        $p = array(
+        $postFields = array(
             'refresh_token' => $refreshToken,
             'grant_type' => 'refresh_token',
         );
@@ -56,28 +60,30 @@ class TokenRequest
         // issue: https://github.com/fkooman/php-oauth-client/issues/20
         if ($this->clientConfig->getUseRedirectUriOnRefreshTokenRequest()) {
             if (null !== $this->clientConfig->getRedirectUri()) {
-                $p['redirect_uri'] = $this->clientConfig->getRedirectUri();
+                $postFields['redirect_uri'] = $this->clientConfig->getRedirectUri();
             }
         }
 
-        return $this->accessTokenRequest($p);
+        return $this->accessTokenRequest($postFields);
     }
 
-    private function accessTokenRequest(array $p)
+    private function accessTokenRequest(array $postFields)
     {
         if ($this->clientConfig->getCredentialsInRequestBody()) {
             // provide credentials in the POST body
-            $p['client_id'] = $this->clientConfig->getClientId();
-            $p['client_secret'] = $this->clientConfig->getClientSecret();
+            $postFields['client_id'] = $this->clientConfig->getClientId();
+            $postFields['client_secret'] = $this->clientConfig->getClientSecret();
         } else {
             // use basic authentication
             $this->httpClient->setBasicAuth($this->clientConfig->getClientId(), $this->clientConfig->getClientSecret());
         }
 
         try {
-            $this->httpClient->addHeader('Accept', 'application/json');
-            $this->httpClient->addPostFields($p);
-            $responseData = $this->httpClient->post($this->clientConfig->getTokenEndpoint());
+            $responseData = $this->httpClient->post(
+                $this->clientConfig->getTokenEndpoint(),
+                $postFields,
+                array('Accept'=>'application/json')
+            );
 
             // some servers do not provide token_type, so we allow for setting
             // a default
@@ -133,6 +139,7 @@ class TokenRequest
 
             return new TokenResponse($responseData);
         } catch (RuntimeException $e) {
+            if (strpos(get_class($e),'PHPUnit')!==false) throw $e;
             return false;
         }
     }
