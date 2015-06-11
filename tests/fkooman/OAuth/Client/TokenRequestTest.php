@@ -16,10 +16,6 @@
  */
 namespace fkooman\OAuth\Client;
 
-use Guzzle\Http\Client;
-use Guzzle\Plugin\History\HistoryPlugin;
-use Guzzle\Plugin\Mock\MockPlugin;
-use Guzzle\Http\Message\Response;
 use fkooman\OAuth\Common\Scope;
 
 class TokenRequestTest extends \PHPUnit_Framework_TestCase
@@ -88,168 +84,175 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
             )
-        );
+        ;
 
         $this->tokenResponse[] = '{';
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
                 'expires_in' => '1200',
             )
-        );
+        ;
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
                 'scope' => array('foo', 'bar'),
             )
-        );
+        ;
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
                 'scope' => 'foo,bar',
             )
-        );
+        ;
     }
 
     public function testWithAuthorizationCode()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[0]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
 
-        $guzzle3Client = new Guzzle3Client($client);
-        $tokenRequest = new TokenRequest($guzzle3Client, $this->clientConfig[0]);
-        $tokenRequest->withAuthorizationCode('12345');
-        $lastRequest = $history->getLastRequest();
-        $this->assertEquals('POST', $lastRequest->getMethod());
-        $this->assertEquals('code=12345&grant_type=authorization_code', $lastRequest->getPostFields()->__toString());
-        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest->getHeader('Authorization'));
-        $this->assertEquals(
-            'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest->getHeader('Content-Type')
-        );
+        $client->expects($this->once())
+            ->method('setBasicAuth')
+            ->with('foo','bar');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[0]));
+
+        $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
+        $result = $tokenRequest->withAuthorizationCode('12345');
+
+        $this->assertInstanceOf('\fkooman\OAuth\Client\TokenResponse', $result);
     }
 
     public function testWithAuthorizationCodeCredentialsInRequestBody()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[0]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
-        $guzzle3Client = new Guzzle3Client($client);
-        $tokenRequest = new TokenRequest($guzzle3Client, $this->clientConfig[1]);
-        $tokenRequest->withAuthorizationCode('12345');
-        $lastRequest = $history->getLastRequest();
-        $this->assertEquals('POST', $lastRequest->getMethod());
-        $this->assertEquals(
-            'code=12345&grant_type=authorization_code&redirect_uri=http%3A%2F%2Ffoo.example.org%2Fcallback&client_id=foo&client_secret=bar',
-            $lastRequest->getPostFields()->__toString()
-        );
-        $this->assertEquals(
-            'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest->getHeader('Content-Type')
-        );
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->never())
+            ->method('setBasicAuth');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[1]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback','client_id'=>'foo','client_secret'=>'bar'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[0]));
+
+        $tokenRequest = new TokenRequest($client, $this->clientConfig[1]);
+        $result = $tokenRequest->withAuthorizationCode('12345');
+
+        $this->assertInstanceOf('\fkooman\OAuth\Client\TokenResponse', $result);
     }
 
     public function testAllowStringExpiresIn()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[2]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
-        $guzzle3Client = new Guzzle3Client($client);
-        $tokenRequest = new TokenRequest($guzzle3Client, $this->clientConfig[2]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[2]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[2]));
+
+        $tokenRequest = new TokenRequest($client, $this->clientConfig[2]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
         $this->assertEquals(1200, $tokenResponse->getExpiresIn());
     }
 
     public function testAllowArrayScope()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[3]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
-        $guzzle3Client = new Guzzle3Client($client);
-        $tokenRequest = new TokenRequest($guzzle3Client, $this->clientConfig[3]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[3]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[3]));
+
+        $tokenRequest = new TokenRequest($client, $this->clientConfig[3]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
         $this->assertTrue($tokenResponse->getScope()->equals(Scope::fromString('foo bar')));
     }
 
     public function testAllowCommaSeparatedScope()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[4]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
-        $guzzle3Client = new Guzzle3Client($client);
-        $tokenRequest = new TokenRequest($guzzle3Client, $this->clientConfig[4]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[4]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[4]));
+
+        $tokenRequest = new TokenRequest($client, $this->clientConfig[4]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
         $this->assertTrue($tokenResponse->getScope()->equals(Scope::fromString('foo bar')));
     }
 
     public function testWithRefreshToken()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[0]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
-        $guzzle3Client = new Guzzle3Client($client);
-        $tokenRequest = new TokenRequest($guzzle3Client, $this->clientConfig[0]);
-        $tokenRequest->withRefreshToken('refresh_123_456');
-        $lastRequest = $history->getLastRequest();
-        $this->assertEquals('POST', $lastRequest->getMethod());
-        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest->getHeader('Authorization'));
-        $this->assertEquals(
-            'refresh_token=refresh_123_456&grant_type=refresh_token',
-            $lastRequest->getPostFields()->__toString()
-        );
-        $this->assertEquals(
-            'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest->getHeader('Content-Type')
-        );
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[4]->getTokenEndpoint(),
+                array('refresh_token' => 'refresh_123_456','grant_type'=>'refresh_token'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[0]));
+
+        $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
+        $result = $tokenRequest->withRefreshToken('refresh_123_456');
+
+        $this->assertInstanceOf('\fkooman\OAuth\Client\TokenResponse', $result);
     }
 
     public function testBrokenJsonResponse()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200, null, $this->tokenResponse[1]));
-        $client->addSubscriber($mock);
-        $history = new HistoryPlugin();
-        $history->setLimit(5);
-        $client->addSubscriber($history);
-        $guzzle3Client = new Guzzle3Client($client);
-        $tokenRequest = new TokenRequest($guzzle3Client, $this->clientConfig[0]);
-        $this->assertFalse($tokenRequest->withRefreshToken('refresh_123_456'));
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code'),
+                array('Accept' => 'application/json')
+            )
+            ->willThrowException(new \fkooman\OAuth\Client\Exception\TokenResponseException());
+
+        $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
+
+        $this->setExpectedException('\fkooman\OAuth\Client\Exception\TokenResponseException');
+        $result = $tokenRequest->withAuthorizationCode('12345');
+
+        $this->assertFalse($result);
     }
 }

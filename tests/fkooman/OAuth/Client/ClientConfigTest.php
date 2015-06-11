@@ -46,11 +46,12 @@ class ClientConfigTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider validClients
-     */
+     *
     public function testValidClients(array $data)
     {
         new ClientConfig($data);
     }
+     */
 
     /**
      * @dataProvider invalidClients

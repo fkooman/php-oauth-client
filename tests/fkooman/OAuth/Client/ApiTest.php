@@ -16,18 +16,16 @@
  */
 namespace fkooman\OAuth\Client;
 
-use PDO;
 use fkooman\OAuth\Common\Scope;
-use Guzzle\Http\Client;
-use Guzzle\Plugin\Mock\MockPlugin;
-use Guzzle\Http\Message\Response;
 
 class ApiTest extends \PHPUnit_Framework_TestCase
 {
     /** @var array */
     private $clientConfig;
 
-    /** @var fkooman\OAuth\Client\PdoStorage */
+    /**
+     * @var \PHPUnit_Framework_MockObject_MockObject
+     */
     private $storage;
 
     public function setUp()
@@ -43,26 +41,22 @@ class ApiTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $this->storage = new PdoStorage(
-            new PDO(
-                $GLOBALS['DB_DSN'],
-                $GLOBALS['DB_USER'],
-                $GLOBALS['DB_PASSWD']
-            )
-        );
-        $this->storage->initDatabase();
+        $this->storage = $this->getMock('\fkooman\OAuth\Client\StorageInterface');
     }
 
     public function testGetAccessTokenWithoutToken()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200));
-        $client->addSubscriber($mock);
-        $guzzle3Client = new Guzzle3Client($client);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
 
-        $api = new Api('foo', $this->clientConfig[0], $this->storage, $guzzle3Client);
+        $client->expects($this->never())->method('post');
+
+        $api = new Api('foo', $this->clientConfig[0], $this->storage, $client);
         $context = new Context('a_user', array('foo', 'bar'));
+
+        $this->storage
+            ->expects($this->once())
+            ->method('getAccessToken')
+            ->will($this->returnValue(null));
 
         $this->assertFalse($api->getAccessToken($context));
         $this->assertEquals('http://www.example.org/authorize?client_id=foo&response_type=code&state=my_custom_state&scope=bar+foo', $api->getAuthorizeUri($context, 'my_custom_state'));
@@ -70,12 +64,11 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithToken()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(new Response(200));
-        $client->addSubscriber($mock);
-        $guzzle3Client = new Guzzle3Client($client);
-        $api = new Api('foo', $this->clientConfig[0], $this->storage, $guzzle3Client);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->never())->method('post');
+
+        $api = new Api('foo', $this->clientConfig[0], $this->storage, $client);
         $context = new Context('a_user', array('foo', 'bar'));
 
         $accessToken = new AccessToken(
@@ -89,7 +82,10 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 'expires_in' => 3600,
             )
         );
-        $this->storage->storeAccessToken($accessToken);
+        $this->storage
+            ->expects($this->once())
+            ->method('getAccessToken')
+            ->will($this->returnValue($accessToken));
 
         $accessToken = $api->getAccessToken($context);
         $this->assertEquals('my_token_value', $accessToken->getAccessToken());
@@ -97,24 +93,22 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithExpiredAccessTokenAndRefreshToken()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(
-            new Response(
-                200,
-                null,
-                json_encode(
-                    array(
-                        'access_token' => 'my_new_access_token_value',
-                        'token_type' => 'Bearer',
-                    )
-                )
-            )
-        );
-        $client->addSubscriber($mock);
-        $guzzle3Client = new Guzzle3Client($client);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
 
-        $api = new Api('foo', $this->clientConfig[0], $this->storage, $guzzle3Client);
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('refresh_token' => 'my_refresh_token_value','grant_type'=>'refresh_token'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue(array(
+                'access_token' => 'my_new_access_token_value',
+                'token_type' => 'BeArEr',
+                'refresh_token' => 'why_not_a_refresh_token',
+            )));
+
+        $api = new Api('foo', $this->clientConfig[0], $this->storage, $client);
         $context = new Context('a_user', array('foo', 'bar'));
 
         $accessToken = new AccessToken(
@@ -128,7 +122,10 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 'expires_in' => 3600,
             )
         );
-        $this->storage->storeAccessToken($accessToken);
+        $this->storage
+            ->expects($this->once())
+            ->method('getAccessToken')
+            ->will($this->returnValue($accessToken));
 
         $refreshToken = new RefreshToken(
             array(
@@ -139,7 +136,10 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 'issue_time' => time() - 10000,
             )
         );
-        $this->storage->storeRefreshToken($refreshToken);
+        $this->storage
+            ->expects($this->once())
+            ->method('getRefreshToken')
+            ->will($this->returnValue($refreshToken));
 
         $accessToken = $api->getAccessToken($context);
         $this->assertEquals('my_new_access_token_value', $accessToken->getAccessToken());

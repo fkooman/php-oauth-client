@@ -27,42 +27,25 @@ class Guzzle3Client implements HttpClientInterface
     /** @var Guzzle\Http\Client */
     private $client;
 
-    /** @var array */
-    private $headers;
-
-    /** @var array */
-    private $postParameters;
-
     public function __construct(Client $client = null)
     {
         if (null === $client) {
             $client = new Client();
         }
         $this->client = $client;
-        $this->headers = array();
-        $this->postParameters = array();
-    }
-
-    public function addPostFields(array $postFields)
-    {
-        $this->postFields = $postFields;
-    }
-
-    public function addHeader($key, $value)
-    {
-        $this->headers[$key] = $value;
     }
 
     public function setBasicAuth($user, $pass)
     {
         $this->client->addSubscriber(new CurlAuthPlugin($user, $pass));
+        return $this;
     }
 
-    public function post($url)
+    public function post($url, $postFields, $headers)
     {
         $request = $this->client->post($url);
-        $request->addPostFields($this->postFields);
-        foreach ($this->headers as $k => $v) {
+        $request->addPostFields($postFields);
+        foreach ($headers as $k => $v) {
             $request->addHeader($k, $v);
         }
 

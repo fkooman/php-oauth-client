@@ -28,7 +28,15 @@ class Api
     const RANDOM_LENGTH = 8;
 
     private $clientConfigId;
+
+    /**
+     * @var ClientConfigInterface
+     */
     private $clientConfig;
+
+    /**
+     * @var StorageInterface
+     */
     private $tokenStorage;
 
     /** @var fkooman/OAuth/Client/HttpClientInterface */
@@ -65,6 +73,10 @@ class Api
         $this->httpClient = $httpClient;
     }
 
+    /**
+     * @param Context $context
+     * @return RefreshToken
+     */
     public function getRefreshToken(Context $context)
     {
         return $this->tokenStorage->getRefreshToken($this->clientConfigId, $context);
@@ -74,7 +86,7 @@ class Api
     {
         // do we have a valid access token?
         $accessToken = $this->tokenStorage->getAccessToken($this->clientConfigId, $context);
-        if (false !== $accessToken) {
+        if ($accessToken instanceof AccessToken) {
             if (null === $accessToken->getExpiresIn()) {
                 // no expiry set, assume always valid
                 return $accessToken;
@@ -90,7 +102,7 @@ class Api
 
         // no valid access token, is there a refresh_token?
         $refreshToken = $this->getRefreshToken($context);
-        if (false !== $refreshToken) {
+        if ($refreshToken instanceof RefreshToken) {
             // obtain a new access token with refresh token
             $tokenRequest = new TokenRequest($this->httpClient, $this->clientConfig);
             $tokenResponse = $tokenRequest->withRefreshToken($refreshToken->getRefreshToken());

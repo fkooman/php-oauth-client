@@ -22,8 +22,18 @@ namespace fkooman\OAuth\Client;
  */
 interface HttpClientInterface
 {
-    public function addPostFields(array $postFields);
-    public function addHeader($key, $value);
+    /**
+     * @param string $user
+     * @param string $pass
+     * @return HttpClientInterface
+     */
     public function setBasicAuth($user, $pass);
-    public function post($url);
+
+    /**
+     * @param string $url
+     * @param array $postFields
+     * @param array $headers
+     * @return string
+     */
+    public function post($url, $postFields, $headers);
 }
