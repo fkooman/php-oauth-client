@@ -22,11 +22,24 @@ use fkooman\OAuth\Client\Exception\AuthorizeException;
 
 class Callback
 {
+    /**
+     * @var string
+     */
     private $clientConfigId;
+
+    /**
+     * @var ClientConfigInterface
+     */
     private $clientConfig;
+
+    /**
+     * @var StorageInterface
+     */
     private $tokenStorage;
 
-    /** @var fkooman\OAuth\Client\HttpClientInterface */
+    /**
+     * @var \fkooman\OAuth\Client\HttpClientInterface
+     */
     private $httpClient;
 
     public function __construct(
