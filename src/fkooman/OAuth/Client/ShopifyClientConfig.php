@@ -31,7 +31,6 @@ class ShopifyClientConfig extends ClientConfig implements ClientConfigInterface
             }
         }
 
-        // we map Google configuration to ClientConfig configuration
         $clientData = array(
             'client_id' => $data['shopify']['client_id'],
             'client_secret' => $data['shopify']['client_secret'],
@@ -40,6 +39,7 @@ class ShopifyClientConfig extends ClientConfig implements ClientConfigInterface
             'redirect_uri' => $data['shopify']['redirect_uri'],
             'credentials_in_request_body' => true,
             'use_comma_separated_scope' => true,
+            'default_token_type' => 'bearer',
         );
         parent::__construct($clientData);
     }
