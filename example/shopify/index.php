@@ -87,7 +87,7 @@ JSON
             'verify' => false,
             'handler' => $stack,
     ]);
-    $api = new Api('php-shopify-client', $clientConfig, $tokenStorage, $client);
+    $api = new Api('php-shopify-client', $clientConfig, $tokenStorage, new \fkooman\OAuth\Client\Guzzle6Client($client));
 
     /* the protected endpoint uri */
     $apiUri = 'https://'.$shopname.'.myshopify.com/admin/pages';

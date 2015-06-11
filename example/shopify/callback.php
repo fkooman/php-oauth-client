@@ -15,21 +15,16 @@ use GuzzleHttp\Client;
 /* OAuth client configuration */
 $clientConfig = new ShopifyClientConfig(json_decode(file_get_contents('client_secrets.json'), true));
 
-#try {
-    //$db = new PDO(sprintf("sqlite:%s/data/client.sqlite", __DIR__));
-    //$tokenStorage = new PdoStorage($db);
-    $tokenStorage = new SessionStorage();
+/* load token from session */
+$tokenStorage = new SessionStorage();
 
-    /* initialize the Callback */
-    $client = new Client([
-            'verify' => false,
-    ]);
-    $cb = new Callback('php-shopify-client', $clientConfig, $tokenStorage, $client);
-    /* handle the callback */
-    $cb->handleCallback($_GET);
+/* initialize the Callback */
+$client = new Client(['verify' => false]);
+$cb = new Callback('php-shopify-client', $clientConfig, $tokenStorage, new \fkooman\OAuth\Client\Guzzle6Client($client));
 
-    header('HTTP/1.1 302 Found');
-    header('Location: '.$clientConfig->getRedirectUri());
-#} catch (Exception $e) {
-#    echo sprintf('ERROR: %s', $e->getMessage());
-#}
+/* handle the callback */
+$cb->handleCallback($_GET);
+
+/* redirect to main script */
+header('HTTP/1.1 302 Found');
+header('Location: '.$clientConfig->getRedirectUri());
