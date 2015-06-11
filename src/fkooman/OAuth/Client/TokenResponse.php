@@ -48,9 +48,7 @@ class TokenResponse
 
     public function __construct(array $data)
     {
-        //Shopify does not provide token_type
-        if (!isset($data['token_type'])) $data['token_type']='bearer';
-        foreach (array('access_token') as $key) {
+        foreach (array('access_token','token_type') as $key) {
             if (!array_key_exists($key, $data)) {
                 throw new TokenResponseException(sprintf("missing field '%s'", $key));
             }
