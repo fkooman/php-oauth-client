@@ -17,9 +17,6 @@
 namespace fkooman\OAuth\Client;
 
 use fkooman\OAuth\Common\Scope;
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 
 class ApiTest extends \PHPUnit_Framework_TestCase
 {
@@ -49,10 +46,9 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithoutToken()
     {
-        $mock = new MockHandler([new Response(
-            200
-        )]);
-        $client = new Client(['handler' => $mock]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->never())->method('post');
 
         $api = new Api('foo', $this->clientConfig[0], $this->storage, $client);
         $context = new Context('a_user', array('foo', 'bar'));
@@ -68,10 +64,9 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithToken()
     {
-        $mock = new MockHandler([new Response(
-            200
-        )]);
-        $client = new Client(['handler' => $mock]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->never())->method('post');
 
         $api = new Api('foo', $this->clientConfig[0], $this->storage, $client);
         $context = new Context('a_user', array('foo', 'bar'));
@@ -98,18 +93,20 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithExpiredAccessTokenAndRefreshToken()
     {
-        $mock = new MockHandler([new Response(
-            200,
-            [],
-            \GuzzleHttp\Psr7\stream_for(json_encode(
-                array(
-                    'access_token' => 'my_new_access_token_value',
-                    'token_type' => 'BeArEr',
-                    'refresh_token' => 'why_not_a_refresh_token',
-                )
-            )))
-        ]);
-        $client = new Client(['handler' => $mock]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('refresh_token' => 'my_refresh_token_value','grant_type'=>'refresh_token'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue(array(
+                'access_token' => 'my_new_access_token_value',
+                'token_type' => 'BeArEr',
+                'refresh_token' => 'why_not_a_refresh_token',
+            )));
 
         $api = new Api('foo', $this->clientConfig[0], $this->storage, $client);
         $context = new Context('a_user', array('foo', 'bar'));

@@ -17,9 +17,6 @@
 namespace fkooman\OAuth\Client;
 
 use fkooman\OAuth\Common\Scope;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Handler\MockHandler;
 
 class CallbackTest extends \PHPUnit_Framework_TestCase
 {
@@ -49,18 +46,24 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testXYZ()
     {
-        $mock = new MockHandler([new Response(
-            200,
-            [],
-            \GuzzleHttp\Psr7\stream_for(json_encode(
-                array(
-                    'access_token' => 'my_access_token',
-                    'token_type' => 'BeArEr',
-                    'refresh_token' => 'why_not_a_refresh_token',
-                )
-            )))
-        ]);
-        $client = new Client(['handler' => $mock]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('setBasicAuth')
+            ->with('foo','bar');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('code' => 'my_code','grant_type'=>'authorization_code'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue(array(
+                'access_token' => 'my_access_token',
+                'token_type' => 'BeArEr',
+                'refresh_token' => 'why_not_a_refresh_token',
+            )));
 
         $state = new State(
             array(

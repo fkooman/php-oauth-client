@@ -16,10 +16,6 @@
  */
 namespace fkooman\OAuth\Client;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Middleware;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 use fkooman\OAuth\Common\Scope;
 
 class TokenRequestTest extends \PHPUnit_Framework_TestCase
@@ -88,93 +84,97 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
             )
-        );
+        ;
 
         $this->tokenResponse[] = '{';
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
                 'expires_in' => '1200',
             )
-        );
+        ;
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
                 'scope' => array('foo', 'bar'),
             )
-        );
+        ;
 
-        $this->tokenResponse[] = json_encode(
+        $this->tokenResponse[] =
             array(
                 'access_token' => 'foo',
                 'token_type' => 'Bearer',
                 'scope' => 'foo,bar',
             )
-        );
+        ;
     }
 
     public function testWithAuthorizationCode()
     {
-        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[0]))]);
-        $container = [];
-        $history = Middleware::history($container);
-        $stack = \GuzzleHttp\HandlerStack::create($mock);
-        $stack->push($history);
-        $client = new Client(['handler' => $stack]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('setBasicAuth')
+            ->with('foo','bar');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[0]));
 
         $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
-        $tokenRequest->withAuthorizationCode('12345');
+        $result = $tokenRequest->withAuthorizationCode('12345');
 
-        $lastRequest = array_pop($container);
-        $this->assertEquals('POST', $lastRequest['request']->getMethod());
-        $this->assertEquals('code=12345&grant_type=authorization_code', $lastRequest['request']->getBody()->__toString());
-        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest['request']->getHeaderLine('Authorization'));
-        $this->assertEquals(
-            'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest['request']->getHeaderLine('Content-Type')
-        );
+        $this->assertInstanceOf('\fkooman\OAuth\Client\TokenResponse', $result);
     }
 
     public function testWithAuthorizationCodeCredentialsInRequestBody()
     {
-        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[0]))]);
-        $container = [];
-        $history = Middleware::history($container);
-        $stack = \GuzzleHttp\HandlerStack::create($mock);
-        $stack->push($history);
-        $client = new Client(['handler' => $stack]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->never())
+            ->method('setBasicAuth');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[1]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback','client_id'=>'foo','client_secret'=>'bar'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[0]));
 
         $tokenRequest = new TokenRequest($client, $this->clientConfig[1]);
-        $tokenRequest->withAuthorizationCode('12345');
-        $lastRequest = array_pop($container);
-        $this->assertEquals('POST', $lastRequest['request']->getMethod());
-        $this->assertEquals(
-            'code=12345&grant_type=authorization_code&redirect_uri=http%3A%2F%2Ffoo.example.org%2Fcallback&client_id=foo&client_secret=bar',
-            $lastRequest['request']->getBody()->__toString()
-        );
-        $this->assertEquals(
-            'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest['request']->getHeaderLine('Content-Type')
-        );
+        $result = $tokenRequest->withAuthorizationCode('12345');
+
+        $this->assertInstanceOf('\fkooman\OAuth\Client\TokenResponse', $result);
     }
 
     public function testAllowStringExpiresIn()
     {
-        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[2]))]);
-        $container = [];
-        $history = Middleware::history($container);
-        $stack = \GuzzleHttp\HandlerStack::create($mock);
-        $stack->push($history);
-        $client = new Client(['handler' => $stack]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[2]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[2]));
 
         $tokenRequest = new TokenRequest($client, $this->clientConfig[2]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
@@ -183,12 +183,16 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowArrayScope()
     {
-        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[3]))]);
-        $container = [];
-        $history = Middleware::history($container);
-        $stack = \GuzzleHttp\HandlerStack::create($mock);
-        $stack->push($history);
-        $client = new Client(['handler' => $stack]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[3]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[3]));
 
         $tokenRequest = new TokenRequest($client, $this->clientConfig[3]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
@@ -197,12 +201,16 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowCommaSeparatedScope()
     {
-        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[4]))]);
-        $container = [];
-        $history = Middleware::history($container);
-        $stack = \GuzzleHttp\HandlerStack::create($mock);
-        $stack->push($history);
-        $client = new Client(['handler' => $stack]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[4]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code','redirect_uri'=>'http://foo.example.org/callback'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[4]));
 
         $tokenRequest = new TokenRequest($client, $this->clientConfig[4]);
         $tokenResponse = $tokenRequest->withAuthorizationCode('12345');
@@ -211,40 +219,40 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testWithRefreshToken()
     {
-        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[0]))]);
-        $container = [];
-        $history = Middleware::history($container);
-        $stack = \GuzzleHttp\HandlerStack::create($mock);
-        $stack->push($history);
-        $client = new Client(['handler' => $stack]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[4]->getTokenEndpoint(),
+                array('refresh_token' => 'refresh_123_456','grant_type'=>'refresh_token'),
+                array('Accept' => 'application/json')
+            )
+            ->will($this->returnValue($this->tokenResponse[0]));
 
         $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
-        $tokenRequest->withRefreshToken('refresh_123_456');
+        $result = $tokenRequest->withRefreshToken('refresh_123_456');
 
-        $lastRequest = array_pop($container);
-        $this->assertEquals('POST', $lastRequest['request']->getMethod());
-        $this->assertEquals('Basic Zm9vOmJhcg==', $lastRequest['request']->getHeaderLine('Authorization'));
-        $this->assertEquals(
-            'refresh_token=refresh_123_456&grant_type=refresh_token',
-            $lastRequest['request']->getBody()->__toString()
-        );
-        $this->assertEquals(
-            'application/x-www-form-urlencoded; charset=utf-8',
-            $lastRequest['request']->getHeaderLine('Content-Type')
-        );
+        $this->assertInstanceOf('\fkooman\OAuth\Client\TokenResponse', $result);
     }
 
     public function testBrokenJsonResponse()
     {
-        $mock = new MockHandler([new Response(200, [], \GuzzleHttp\Psr7\stream_for($this->tokenResponse[1]))]);
-        $container = [];
-        $history = Middleware::history($container);
-        $stack = \GuzzleHttp\HandlerStack::create($mock);
-        $stack->push($history);
-        $client = new Client(['handler' => $stack]);
+        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('code' => '12345','grant_type'=>'authorization_code'),
+                array('Accept' => 'application/json')
+            )
+            ->willThrowException(new \fkooman\OAuth\Client\Exception\TokenResponseException());
 
         $tokenRequest = new TokenRequest($client, $this->clientConfig[0]);
+
         $this->setExpectedException('\fkooman\OAuth\Client\Exception\TokenResponseException');
-        $this->assertFalse($tokenRequest->withRefreshToken('refresh_123_456'));
+        $result = $tokenRequest->withAuthorizationCode('12345');
+
+        $this->assertFalse($result);
     }
 }
