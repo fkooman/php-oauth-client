@@ -1,41 +1,14 @@
 <?php
 
-if (isset($_GET['code'])) {
-    require 'callback.php';
-    return;
-}
+if (file_exists('vendor/autoload.php')) require_once 'vendor/autoload.php';
+if (file_exists('../../vendor/autoload.php')) require_once '../../vendor/autoload.php';
 
-if (file_exists('vendor/autoload.php')) {
-    require_once 'vendor/autoload.php';
-}
-if (file_exists('../../vendor/autoload.php')) {
-    require_once '../../vendor/autoload.php';
-}
+$http_client = \cdyweb\http\guzzle\Guzzle::getAdapter();
 
 use fkooman\OAuth\Client\Api;
 use fkooman\OAuth\Client\Context;
 use fkooman\OAuth\Client\ShopifyClientConfig;
 use fkooman\OAuth\Client\SessionStorage;
-use GuzzleHttp\Client;
-
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Handler\CurlHandler;
-
-function add_header($tokenStorage, $context)
-{
-    return function (callable $handler) use ($tokenStorage, $context) {
-        return function (
-            \GuzzleHttp\Psr7\Request $request,
-            array $options
-        ) use ($handler, $tokenStorage, $context) {
-            $token = $tokenStorage->getAccessToken('php-shopify-client', $context)->getAccessToken();
-            $request = $request
-                ->withHeader('X-Shopify-Access-Token', $token)
-                ->withHeader('Accept', 'application/json');
-            return $handler($request, $options);
-        };
-    };
-}
 
 try {
     if (!file_exists('client_secrets.json')) {
@@ -80,21 +53,30 @@ JSON
     //$tokenStorage = new PdoStorage($db);
     $tokenStorage = new SessionStorage();
 
-    $stack = new HandlerStack();
-    $stack->setHandler(new CurlHandler());
-    $stack->push(add_header($tokenStorage, $context));
-    $client = new Client([
-            'verify' => false,
-            'handler' => $stack,
-    ]);
-    $api = new Api('php-shopify-client', $clientConfig, $tokenStorage, new \fkooman\OAuth\Client\Guzzle6Client($client));
+    if (isset($_GET['code'])) {
+        /* load token from session */
+        $tokenStorage = new SessionStorage();
+
+        /* initialize the Callback */
+        $cb = new \fkooman\OAuth\Client\Callback('php-shopify-client', $clientConfig, $tokenStorage, $http_client);
+
+        /* handle the callback */
+        $cb->handleCallback($_GET);
+
+        /* redirect to main script */
+        header('HTTP/1.1 302 Found');
+        header('Location: '.$clientConfig->getRedirectUri());
+        exit();
+    }
+
+    $api = new Api('php-shopify-client', $clientConfig, $tokenStorage, $http_client);
 
     /* the protected endpoint uri */
     $apiUri = 'https://'.$shopname.'.myshopify.com/admin/pages';
 
     /* get the access token */
     $accessToken = $api->getAccessToken($context);
-    if (!$accessToken) {
+    if (!$accessToken || isset($_GET['renew'])) {
         /* no valid access token available just yet, go to authorization server */
         header('HTTP/1.1 302 Found');
         header('Location: '.$api->getAuthorizeUri($context));
@@ -102,7 +84,12 @@ JSON
     }
 
     /* we have an access token */
-    $response = $client->get($apiUri);
+    $http_client->appendRequestHeaders(array(
+        'X-Shopify-Access-Token'=>$accessToken->getAccessToken(),
+        'Accept'=>'application/json'
+    ));
+
+    $response = $http_client->get($apiUri);
 
     var_dump(json_decode($response->getBody(),true));
 
