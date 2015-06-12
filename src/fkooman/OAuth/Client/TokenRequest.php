@@ -16,12 +16,13 @@
  */
 namespace fkooman\OAuth\Client;
 
+use cdyweb\http\Adapter;
 use RuntimeException;
 
 class TokenRequest
 {
     /**
-     * @var \fkooman\OAuth\Client\HttpClientInterface
+     * @var Adapter
      */
     private $httpClient;
 
@@ -30,7 +31,7 @@ class TokenRequest
      */
     private $clientConfig;
 
-    public function __construct(HttpClientInterface $httpClient, ClientConfigInterface $clientConfig)
+    public function __construct(Adapter $httpClient, ClientConfigInterface $clientConfig)
     {
         $this->httpClient = $httpClient;
         $this->clientConfig = $clientConfig;
@@ -79,11 +80,12 @@ class TokenRequest
         }
 
         try {
-            $responseData = $this->httpClient->post(
+            $psr_response = $this->httpClient->post(
                 $this->clientConfig->getTokenEndpoint(),
-                $postFields,
-                array('Accept'=>'application/json')
+                array('Accept'=>'application/json'),
+                $postFields
             );
+            $responseData = json_decode($psr_response->getBody(), true);
 
             // some servers do not provide token_type, so we allow for setting
             // a default

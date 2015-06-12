@@ -46,7 +46,7 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithoutToken()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->never())->method('post');
 
@@ -64,7 +64,7 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithToken()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->never())->method('post');
 
@@ -93,7 +93,7 @@ class ApiTest extends \PHPUnit_Framework_TestCase
 
     public function testGetAccessTokenWithExpiredAccessTokenAndRefreshToken()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->once())
             ->method('post')

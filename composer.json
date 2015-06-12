@@ -18,6 +18,7 @@
         "ext-openssl": "*",
         "fkooman/oauth-common": "~0.5.0",
         "guzzle/guzzle": "~3.9",
+        "cdyweb/http-adapter": "dev-master#c7497c5d4023860dcecd9d8d336b2711d493a536",
         "php": ">=5.3.3"
     },
     "require-dev": {

@@ -16,6 +16,7 @@
  */
 namespace fkooman\OAuth\Client;
 
+use cdyweb\http\Adapter;
 use fkooman\OAuth\Client\Exception\ApiException;
 
 /**
@@ -39,10 +40,10 @@ class Api
      */
     private $tokenStorage;
 
-    /** @var fkooman/OAuth/Client/HttpClientInterface */
+    /** @var Adapter */
     private $httpClient;
 
-    public function __construct($clientConfigId, ClientConfigInterface $clientConfig, StorageInterface $tokenStorage, HttpClientInterface $httpClient)
+    public function __construct($clientConfigId, ClientConfigInterface $clientConfig, StorageInterface $tokenStorage, Adapter $httpClient)
     {
         $this->setClientConfigId($clientConfigId);
         $this->setClientConfig($clientConfig);
@@ -68,7 +69,7 @@ class Api
         $this->tokenStorage = $tokenStorage;
     }
 
-    public function setHttpClient(HttpClientInterface $httpClient)
+    public function setHttpClient(Adapter $httpClient)
     {
         $this->httpClient = $httpClient;
     }
@@ -227,7 +228,6 @@ class Api
 
         $separator = (false === strpos($this->clientConfig->getAuthorizeEndpoint(), '?')) ? '?' : '&';
         $authorizeUri = $this->clientConfig->getAuthorizeEndpoint().$separator.http_build_query($q, null, '&');
-
         return $authorizeUri;
     }
 }

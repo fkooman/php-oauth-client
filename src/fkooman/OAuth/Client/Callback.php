@@ -16,6 +16,7 @@
  */
 namespace fkooman\OAuth\Client;
 
+use cdyweb\http\Adapter;
 use fkooman\OAuth\Client\Exception\CallbackException;
 // FIXME: replace AuthorizeException with CallbackException?
 use fkooman\OAuth\Client\Exception\AuthorizeException;
@@ -38,7 +39,7 @@ class Callback
     private $tokenStorage;
 
     /**
-     * @var \fkooman\OAuth\Client\HttpClientInterface
+     * @var Adapter
      */
     private $httpClient;
 
@@ -46,7 +47,7 @@ class Callback
         $clientConfigId,
         ClientConfigInterface $clientConfig,
         StorageInterface $tokenStorage,
-        HttpClientInterface $httpClient
+        Adapter $httpClient
     ) {
         $this->setClientConfigId($clientConfigId);
         $this->setClientConfig($clientConfig);
@@ -87,7 +88,7 @@ class Callback
         return $this->tokenStorage;
     }
 
-    public function setHttpClient(HttpClientInterface $httpClient)
+    public function setHttpClient(Adapter $httpClient)
     {
         $this->httpClient = $httpClient;
     }

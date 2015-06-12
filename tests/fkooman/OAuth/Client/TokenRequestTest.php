@@ -120,7 +120,7 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testWithAuthorizationCode()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->once())
             ->method('setBasicAuth')
@@ -143,7 +143,7 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testWithAuthorizationCodeCredentialsInRequestBody()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->never())
             ->method('setBasicAuth');
@@ -165,7 +165,7 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowStringExpiresIn()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->once())
             ->method('post')
@@ -183,7 +183,7 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowArrayScope()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->once())
             ->method('post')
@@ -201,7 +201,7 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowCommaSeparatedScope()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->once())
             ->method('post')
@@ -219,7 +219,7 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testWithRefreshToken()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
         $client->expects($this->once())
             ->method('post')
             ->with(
@@ -237,7 +237,7 @@ class TokenRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testBrokenJsonResponse()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->once())
             ->method('post')

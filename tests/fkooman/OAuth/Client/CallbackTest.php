@@ -46,7 +46,7 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
 
     public function testXYZ()
     {
-        $client = $this->getMock('\fkooman\OAuth\Client\HttpClientInterface');
+        $client = $this->getMock('\cdyweb\http\Adapter');
 
         $client->expects($this->once())
             ->method('setBasicAuth')
