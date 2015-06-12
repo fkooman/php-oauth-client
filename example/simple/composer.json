@@ -1,6 +1,6 @@
 {
     "name": "fkooman/php-oauth-client-example", 
     "require": {
-        "fkooman/php-oauth-client": "dev-master"
+        "fkooman/oauth-client": "dev-master"
     }
 }

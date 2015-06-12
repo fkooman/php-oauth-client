@@ -1,5 +1,7 @@
 <?php
 
+//@todo make this example work with Guzzle 6
+
 require_once 'vendor/autoload.php';
 
 $introspection = 'http://localhost/php-oauth-as/introspect.php';
@@ -14,7 +16,7 @@ $clientConfig = new fkooman\OAuth\Client\ClientConfig(
 );
 
 $tokenStorage = new fkooman\OAuth\Client\SessionStorage();
-$httpClient = new Guzzle\Http\Client();
+$httpClient = new Guzzle3Client();
 $api = new fkooman\OAuth\Client\Api('foo', $clientConfig, $tokenStorage, $httpClient);
 
 $context = new fkooman\OAuth\Client\Context('john.doe@example.org', array('authorizations'));

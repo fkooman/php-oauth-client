@@ -16,16 +16,18 @@
  */
 namespace fkooman\OAuth\Client;
 
-use PDO;
 use fkooman\OAuth\Common\Scope;
-use Guzzle\Http\Client;
-use Guzzle\Plugin\Mock\MockPlugin;
 use Guzzle\Http\Message\Response;
 
 class CallbackTest extends \PHPUnit_Framework_TestCase
 {
     /** @var array */
     private $clientConfig;
+
+    /**
+     * @var \PHPUnit_Framework_MockObject_MockObject
+     */
+    private $storage;
 
     public function setUp()
     {
@@ -40,34 +42,29 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $this->storage = new PdoStorage(
-            new PDO(
-                $GLOBALS['DB_DSN'],
-                $GLOBALS['DB_USER'],
-                $GLOBALS['DB_PASSWD']
-            )
-        );
-        $this->storage->initDatabase();
+        $this->storage = $this->getMock('\fkooman\OAuth\Client\StorageInterface');
     }
 
     public function testXYZ()
     {
-        $client = new Client();
-        $mock = new MockPlugin();
-        $mock->addResponse(
-            new Response(
-                200,
-                null,
-                json_encode(
-                    array(
-                        'access_token' => 'my_access_token',
-                        'token_type' => 'BeArEr',
-                        'refresh_token' => 'why_not_a_refresh_token',
-                    )
-                )
+        $client = $this->getMock('\cdyweb\http\Adapter');
+
+        $client->expects($this->once())
+            ->method('setBasicAuth')
+            ->with('foo','bar');
+
+        $client->expects($this->once())
+            ->method('post')
+            ->with(
+                $this->clientConfig[0]->getTokenEndpoint(),
+                array('Accept' => 'application/json'),
+                array('code' => 'my_code','grant_type'=>'authorization_code')
             )
-        );
-        $client->addSubscriber($mock);
+            ->will($this->returnValue(new Response(200,array(),json_encode(array(
+                'access_token' => 'my_access_token',
+                'token_type' => 'BeArEr',
+                'refresh_token' => 'why_not_a_refresh_token',
+            )))));
 
         $state = new State(
             array(
@@ -78,7 +75,10 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
                 'scope' => Scope::fromString('foo bar'),
             )
         );
-        $this->storage->storeState($state);
+        $this->storage
+            ->expects($this->once())
+            ->method('getState')
+            ->will($this->returnValue($state));
 
         $callback = new Callback('foo', $this->clientConfig[0], $this->storage, $client);
 

@@ -16,36 +16,43 @@
  */
 namespace fkooman\OAuth\Client;
 
+use cdyweb\http\Adapter;
+use RuntimeException;
+
 class TokenRequest
 {
-    /** @var \Guzzle\Http\Client */
-    private $c;
+    /**
+     * @var Adapter
+     */
+    private $httpClient;
 
-    /** @var \fkooman\OAuth\Client\ClientConfigInterface */
+    /**
+     * @var \fkooman\OAuth\Client\ClientConfigInterface
+     */
     private $clientConfig;
 
-    public function __construct(\Guzzle\Http\Client $c, ClientConfigInterface $clientConfig)
+    public function __construct(Adapter $httpClient, ClientConfigInterface $clientConfig)
     {
-        $this->c = $c;
+        $this->httpClient = $httpClient;
         $this->clientConfig = $clientConfig;
     }
 
     public function withAuthorizationCode($authorizationCode)
     {
-        $p = array(
+        $postFields = array(
             'code' => $authorizationCode,
             'grant_type' => 'authorization_code',
         );
         if (null !== $this->clientConfig->getRedirectUri()) {
-            $p['redirect_uri'] = $this->clientConfig->getRedirectUri();
+            $postFields['redirect_uri'] = $this->clientConfig->getRedirectUri();
         }
 
-        return $this->accessTokenRequest($p);
+        return $this->accessTokenRequest($postFields);
     }
 
     public function withRefreshToken($refreshToken)
     {
-        $p = array(
+        $postFields = array(
             'refresh_token' => $refreshToken,
             'grant_type' => 'refresh_token',
         );
@@ -54,34 +61,31 @@ class TokenRequest
         // issue: https://github.com/fkooman/php-oauth-client/issues/20
         if ($this->clientConfig->getUseRedirectUriOnRefreshTokenRequest()) {
             if (null !== $this->clientConfig->getRedirectUri()) {
-                $p['redirect_uri'] = $this->clientConfig->getRedirectUri();
+                $postFields['redirect_uri'] = $this->clientConfig->getRedirectUri();
             }
         }
 
-        return $this->accessTokenRequest($p);
+        return $this->accessTokenRequest($postFields);
     }
 
-    private function accessTokenRequest(array $p)
+    private function accessTokenRequest(array $postFields)
     {
         if ($this->clientConfig->getCredentialsInRequestBody()) {
             // provide credentials in the POST body
-            $p['client_id'] = $this->clientConfig->getClientId();
-            $p['client_secret'] = $this->clientConfig->getClientSecret();
+            $postFields['client_id'] = $this->clientConfig->getClientId();
+            $postFields['client_secret'] = $this->clientConfig->getClientSecret();
         } else {
             // use basic authentication
-            $curlAuth = new \Guzzle\Plugin\CurlAuth\CurlAuthPlugin(
-                $this->clientConfig->getClientId(),
-                $this->clientConfig->getClientSecret()
-            );
-            $this->c->addSubscriber($curlAuth);
+            $this->httpClient->setBasicAuth($this->clientConfig->getClientId(), $this->clientConfig->getClientSecret());
         }
 
         try {
-            $request = $this->c->post($this->clientConfig->getTokenEndpoint());
-            $request->addPostFields($p);
-            $request->addHeader('Accept', 'application/json');
-
-            $responseData = $request->send()->json();
+            $psr_response = $this->httpClient->post(
+                $this->clientConfig->getTokenEndpoint(),
+                array('Accept'=>'application/json'),
+                $postFields
+            );
+            $responseData = json_decode($psr_response->getBody(), true);
 
             // some servers do not provide token_type, so we allow for setting
             // a default
@@ -136,7 +140,8 @@ class TokenRequest
             }
 
             return new TokenResponse($responseData);
-        } catch (\Guzzle\Common\Exception\RuntimeException $e) {
+        } catch (RuntimeException $e) {
+            if (strpos(get_class($e),'PHPUnit')!==false) throw $e;
             return false;
         }
     }
