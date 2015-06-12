@@ -17,6 +17,7 @@
 namespace fkooman\OAuth\Client;
 
 use fkooman\OAuth\Common\Scope;
+use Guzzle\Http\Message\Response;
 
 class CallbackTest extends \PHPUnit_Framework_TestCase
 {
@@ -56,14 +57,14 @@ class CallbackTest extends \PHPUnit_Framework_TestCase
             ->method('post')
             ->with(
                 $this->clientConfig[0]->getTokenEndpoint(),
-                array('code' => 'my_code','grant_type'=>'authorization_code'),
-                array('Accept' => 'application/json')
+                array('Accept' => 'application/json'),
+                array('code' => 'my_code','grant_type'=>'authorization_code')
             )
-            ->will($this->returnValue(array(
+            ->will($this->returnValue(new Response(200,array(),json_encode(array(
                 'access_token' => 'my_access_token',
                 'token_type' => 'BeArEr',
                 'refresh_token' => 'why_not_a_refresh_token',
-            )));
+            )))));
 
         $state = new State(
             array(
