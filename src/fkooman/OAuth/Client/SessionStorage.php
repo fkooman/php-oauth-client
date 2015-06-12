@@ -26,6 +26,10 @@ class SessionStorage implements StorageInterface
         }
     }
 
+    public function __destruct() {
+        session_write_close();
+    }
+
     public function getAccessToken($clientConfigId, Context $context)
     {
         if (!isset($_SESSION['php-oauth-client']['access_token'])) {
