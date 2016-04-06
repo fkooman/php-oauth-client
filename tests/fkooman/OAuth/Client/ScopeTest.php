@@ -23,19 +23,19 @@ class ScopeTest extends PHPUnit_Framework_TestCase
 {
     public function testScope()
     {
-        $s = new Scope(array("read", "write", "foo"));
+        $s = new Scope(array('read', 'write', 'foo'));
         $this->assertFalse($s->isEmpty());
-        $this->assertTrue($s->hasScope(new Scope(array("read"))));
-        $this->assertTrue($s->hasScope(new Scope(array("write"))));
-        $this->assertTrue($s->hasScope(new Scope(array("foo"))));
-        $this->assertTrue($s->hasAnyScope(new Scope(array("foo", "bar"))));
-        $this->assertTrue($s->equals(new Scope(array("foo", "write", "read"))));
-        $this->assertFalse($s->equals(new Scope(array("read", "write"))));
-        $this->assertFalse($s->equals(new Scope(array("bar", "foo", "read", "write"))));
-        $this->assertFalse($s->hasAnyScope(new Scope(array("bar", "baz"))));
-        $this->assertEquals("foo read write", $s->toString());
-        $this->assertEquals("foo read write", $s->__toString());
-        $this->assertEquals("foo,read,write", $s->toString(","));
+        $this->assertTrue($s->hasScope(new Scope(array('read'))));
+        $this->assertTrue($s->hasScope(new Scope(array('write'))));
+        $this->assertTrue($s->hasScope(new Scope(array('foo'))));
+        $this->assertTrue($s->hasAnyScope(new Scope(array('foo', 'bar'))));
+        $this->assertTrue($s->equals(new Scope(array('foo', 'write', 'read'))));
+        $this->assertFalse($s->equals(new Scope(array('read', 'write'))));
+        $this->assertFalse($s->equals(new Scope(array('bar', 'foo', 'read', 'write'))));
+        $this->assertFalse($s->hasAnyScope(new Scope(array('bar', 'baz'))));
+        $this->assertEquals('foo read write', $s->toString());
+        $this->assertEquals('foo read write', $s->__toString());
+        $this->assertEquals('foo,read,write', $s->toString(','));
     }
 
     public function testEmptyScope()
@@ -43,31 +43,31 @@ class ScopeTest extends PHPUnit_Framework_TestCase
         $s = new Scope();
         $this->assertTrue($s->isEmpty());
         $this->assertTrue($s->equals(new Scope()));
-        $this->assertFalse($s->hasScope(new Scope(array("foo"))));
+        $this->assertFalse($s->hasScope(new Scope(array('foo'))));
         $this->assertTrue($s->hasScope(new Scope()));
         $this->assertTrue($s->hasAnyScope(new Scope()));
     }
 
     public function testScopeFromString()
     {
-        $s = Scope::fromString("foo bar");
-        $this->assertEquals(array("bar", "foo"), $s->toArray());
+        $s = Scope::fromString('foo bar');
+        $this->assertEquals(array('bar', 'foo'), $s->toArray());
     }
 
     public function testScopeFromStringCommaSeparated()
     {
-        $s = Scope::fromString("foo,bar", ",");
-        $this->assertEquals(array("bar", "foo"), $s->toArray());
+        $s = Scope::fromString('foo,bar', ',');
+        $this->assertEquals(array('bar', 'foo'), $s->toArray());
     }
 
     public function testHasOnlyScope()
     {
-        $scope = new Scope(array("foo", "bar"));
-        $this->assertTrue($scope->hasOnlyScope(new Scope(array("foo", "bar", "baz"))));
-        $this->assertFalse($scope->hasOnlyScope(new Scope(array("foo"))));
+        $scope = new Scope(array('foo', 'bar'));
+        $this->assertTrue($scope->hasOnlyScope(new Scope(array('foo', 'bar', 'baz'))));
+        $this->assertFalse($scope->hasOnlyScope(new Scope(array('foo'))));
         $this->assertFalse($scope->hasOnlyScope(new Scope()));
         $scopeTwo = new Scope();
-        $this->assertTrue($scopeTwo->hasOnlyScope(new Scope(array("foo"))));
+        $this->assertTrue($scopeTwo->hasOnlyScope(new Scope(array('foo'))));
     }
 
     /**
@@ -76,7 +76,7 @@ class ScopeTest extends PHPUnit_Framework_TestCase
      */
     public function testInvalidScopeToken()
     {
-        $s = new Scope(array("François"));
+        $s = new Scope(array('François'));
     }
 
     /**
@@ -85,7 +85,7 @@ class ScopeTest extends PHPUnit_Framework_TestCase
      */
     public function testEmptyArrayScope()
     {
-        $s = new Scope(array("foo", "", "bar"));
+        $s = new Scope(array('foo', '', 'bar'));
     }
 
     /**
@@ -105,7 +105,7 @@ class ScopeTest extends PHPUnit_Framework_TestCase
 
     public function testEmptyStringFromString()
     {
-        $s = Scope::fromString("");
+        $s = Scope::fromString('');
         $this->assertTrue($s->isEmpty());
     }
 
@@ -115,12 +115,12 @@ class ScopeTest extends PHPUnit_Framework_TestCase
      */
     public function testEmptyStringScope()
     {
-        $s = new Scope(array("foo ", "bar"));
+        $s = new Scope(array('foo ', 'bar'));
     }
 
     public function testSerialize()
     {
-        $s = new Scope(array("foo", "bar", "baz"));
+        $s = new Scope(array('foo', 'bar', 'baz'));
         $t = new Scope($s->toArray());
         $this->assertTrue($t->equals($s));
     }

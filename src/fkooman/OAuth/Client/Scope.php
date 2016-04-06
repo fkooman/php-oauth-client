@@ -28,26 +28,26 @@ class Scope
     {
         foreach ($scope as $s) {
             if (!$this->validateScopeToken($s)) {
-                throw new ScopeException("invalid scope token");
+                throw new ScopeException('invalid scope token');
             }
         }
         sort($scope, SORT_STRING);
         $this->scope = array_values(array_unique($scope, SORT_STRING));
     }
 
-    public static function fromString($scope, $separator = " ")
+    public static function fromString($scope, $separator = ' ')
     {
         if (null === $scope) {
             return new self();
         }
         if (!is_string($scope)) {
-            throw new ScopeException("scope must be string");
+            throw new ScopeException('scope must be string');
         }
         if (0 === strlen($scope)) {
             return new self();
         }
         if (!is_string($separator)) {
-            throw new ScopeException("separator must be string");
+            throw new ScopeException('separator must be string');
         }
 
         return new self(explode($separator, $scope));
@@ -140,10 +140,10 @@ class Scope
         return $this->scope;
     }
 
-    public function toString($separator = " ")
+    public function toString($separator = ' ')
     {
         if (!is_string($separator)) {
-            throw new ScopeException("separator must be string");
+            throw new ScopeException('separator must be string');
         }
 
         return implode($separator, $this->scope);
@@ -165,7 +165,7 @@ class Scope
     private function validateScopeToken($scopeToken)
     {
         if (!is_string($scopeToken) || 0 >= strlen($scopeToken)) {
-            throw new ScopeException("scope token must be a non-empty string");
+            throw new ScopeException('scope token must be a non-empty string');
         }
         $scopeTokenRegExp = '/^(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+$/';
         $result = preg_match($scopeTokenRegExp, $scopeToken);
