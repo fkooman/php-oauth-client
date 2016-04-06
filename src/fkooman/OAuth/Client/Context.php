@@ -17,14 +17,14 @@
 namespace fkooman\OAuth\Client;
 
 use fkooman\OAuth\Client\Exception\ContextException;
-use fkooman\OAuth\Common\Scope;
+use fkooman\OAuth\Client\Scope;
 
 class Context
 {
     /** @var string */
     private $userId;
 
-    /** @var fkooman\OAuth\Common\Scope */
+    /** @var fkooman\OAuth\Client\Scope */
     private $scope;
 
     public function __construct($userId, array $scope = array())

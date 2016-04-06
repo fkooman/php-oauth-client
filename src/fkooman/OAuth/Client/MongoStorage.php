@@ -16,7 +16,7 @@
  */
 namespace fkooman\OAuth\Client;
 
-use fkooman\OAuth\Common\Scope;
+use fkooman\OAuth\Client\Scope;
 
 /**
  * Class MongoStorage.

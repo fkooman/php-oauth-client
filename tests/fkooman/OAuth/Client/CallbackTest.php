@@ -17,7 +17,7 @@
 namespace fkooman\OAuth\Client;
 
 use PDO;
-use fkooman\OAuth\Common\Scope;
+use fkooman\OAuth\Client\Scope;
 use Guzzle\Http\Client;
 use Guzzle\Plugin\Mock\MockPlugin;
 use Guzzle\Http\Message\Response;

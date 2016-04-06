@@ -17,7 +17,7 @@
 namespace fkooman\OAuth\Client;
 
 use fkooman\OAuth\Client\Exception\TokenResponseException;
-use fkooman\OAuth\Common\Scope;
+use fkooman\OAuth\Client\Scope;
 
 class TokenResponse
 {

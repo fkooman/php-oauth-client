@@ -20,7 +20,7 @@ use Guzzle\Http\Client;
 use Guzzle\Plugin\History\HistoryPlugin;
 use Guzzle\Plugin\Mock\MockPlugin;
 use Guzzle\Http\Message\Response;
-use fkooman\OAuth\Common\Scope;
+use fkooman\OAuth\Client\Scope;
 
 class TokenRequestTest extends \PHPUnit_Framework_TestCase
 {
