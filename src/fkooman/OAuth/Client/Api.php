@@ -165,7 +165,7 @@ class Api
         }
     }
 
-    public function getAuthorizeUri(Context $context, $stateValue = null)
+    public function getAuthorizeUri(Context $context, $stateValue = null, $accessType = "online")
     {
         // allow caller to override a random generated state
         // FIXME: is this actually used anywhere?
@@ -196,6 +196,7 @@ class Api
             'client_id' => $this->clientConfig->getClientId(),
             'response_type' => 'code',
             'state' => $state->getState(),
+            'access_type' => $accessType,
         );
 
         // scope
