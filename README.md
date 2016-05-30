@@ -1,3 +1,14 @@
+**PLEASE NO LONGER USE THIS LIBRARY**
+
+**DO NOT USE**
+
+Please consider using https://github.com/fkooman/php-oauth2-client if you 
+require a library with PHP 5.4 support.
+
+**NOTE**: if you are not bound to PHP 5.4, use the OAuth 2.0 client of 
+the League of Extraordinary Packages! It can be found 
+[here](http://oauth2-client.thephpleague.com/).
+ 
 [![Build Status](https://travis-ci.org/fkooman/php-oauth-client.png?branch=master)](https://travis-ci.org/fkooman/php-oauth-client)
 
 # Introduction
